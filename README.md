@@ -1,86 +1,67 @@
-# DFGC Detection Solution
-This repo provides an solution for the [DeepFake Game Competition (DFGC) @ IJCB 2021 Detection track](https://competitions.codalab.org/competitions/29583#learn_the_details). 
-Our solution achieve the 1st in the sixth phase of the DFGC Detection track.
-The ranking can be seen [here](https://competitions.codalab.org/competitions/29583#results)
+# 深度伪造检测项目文档
 
-## Technology Report Papers
-[DFGC 2021: A DeepFake Game Competition](https://arxiv.org/pdf/2106.01217.pdf)
+## 项目简介
 
-## Newly: code for [1st solution for DFGC2022](https://github.com/chenhanch/DFGC-2022-1st-place)
+AI_2025_Team 开发的深度伪造检测系统，利用AI算法、图像分析技术和多模态数据分析方法，自动检测和识别深度伪造内容，旨在应对深度伪造技术带来的风险，如虚假信息散布、身份盗用和信任危机等。
 
-## Authors
-Institution: Shenzhen Key Laboratory of Media Information Content Security(MICS)
+## 核心团队
 
-Team name: Forensics_SZU  
+  * **陈中旻**
+    * 学号：202328013229140
 
-Username: BokingChen
-- [Han Chen](https://github.com/chenhanch) email:2016130205@email.szu.edu.cn
-- [Baoying Chen](https://github.com/beibuwandeluori) email: 1900271059@email.szu.edu.cn
-- [Yanjie Hu](https://github.com/zero-end)
-- [Sili Li](https://github.com/szu-lisili)
-- [Weilong Wu](https://github.com/wu-leaf)
-- [Shenghai Luo](https://github.com/L-Icarus)
-- [Long Zhuo](https://github.com/ZoloLongZhuo)
-## Pipeline
-![image](pipeline.png)
-## Training
-### 1. Data Preparation
-If you have any questions of data preparation, you can send an email to HanChen(2016130205@email.szu.edu.cn)
-* 1.1 Extract Face Images and Facial Landmarks
+  * **高萱**
+    * 学号：202328013229143
 
-To extract face images and save facial landmarks, you can refer to  "./data_preparation/extract_face/README.md"
-* 1.2 Generate adversarial examples(Extended data created from Celeb-DF-v2, 
-we only using train set for training)
+## 技术背景
 
-To generate adversarial examples, you can refer to "./data_preparation/generate_adversarial/README.md",
-or you can download the extended data(zip file, 3.63G) in 百度网盘(pan.baidu.com):
+### 深度伪造技术
 
-download link：https://pan.baidu.com/s/1YNO2kXX67EvQV3p145kk-g 
-Extraction code(提取码)：1234 
+深度伪造技术利用深度学习生成高仿真的人脸、声音、影像，使生成内容几乎可以以假乱真。它在电影艺术创作、数字教学、虚拟主播等领域有正面应用，但也存在风险，如散布虚假信息、绑架或盗用他人身份、引发信任危机等。
 
-After downloaded the zip file, you can unzip it and move it into "Celeb-DF-v2-face" directory,
-the data structure can be seen as follow:
-* 1.3 data structure sample: ./data_preparation/data_structure
+### 深度伪造检测
 
-![image](data_structure.png)
-### 2. Tricks 
-#### 2.1 Data Augmentation
-* Traditional: HorizontalFlip(), GaussNoise(p=0.1), GaussianBlur(p=0.1), 
-* Self-supervised(one of key points of improvement): Blending real and fake faces(p=0.5).
-Blending Demo can be seen as follow:
+深度伪造检测利用多种技术手段，自动检测和识别深度伪造内容，应用场景包括社交媒体防止不实信息传播、新闻媒体确保信息真实性、国家安全与执法协助辨别真伪、金融与保险防范欺骗行为等。
 
-![image](blending.png)
-#### 2.2 Loss
-* LabelSmoothing(smoothing=0.05)
-#### 2.3 Balance class sampler by upsampling mode
-* BalanceClassSampler(labels=xdl.get_labels(), mode="upsampling")
-#### 2.4 Using fake faces with adversarial noise for training((one of key points of improvement))
-* We training the model efficientnet-b3(pretrained in ImageNet) with 3 classes:
-class 0: real faces; class 1: clean fake faces; class 2: fake faces with adversarial noise
-*  class 0:class 1:class 2 = 4:1:3 per epoch 
-* To predict images, we combine class 1 and class 2 into one class(fake faces)
-```
-outputs = nn.Softmax(dim=1)(model(imgs))
-prediction = 1 - outputs[:, 0]
-```
-The prediction are the probability of testing images being fake,
-in the range [0, 1], where 0 is real and 1 is fake
-### 3. Start training
-If you have any questions of starting training, you can send an email to Baoying Chen(1900271059@email.szu.edu.cn)
-```bash
-# you need to replace the "root_path" before running
-python train_3c.py  
-```
-We randomly split 80% the train set for training and 20% for validation. 
-During training phase, we verify the AUC of the validation set every 20 epochs, 
-and save the model weight if it is improved. The model weights were saved in "./output/weights".
-Finally, we select the model weight with the highest auc for submission
+## 技术方法
 
-## Submission
-* After training, you can move your best weights into "./submission_Det"
-* replace weight name in line 105 of "./submission_Det/model.py" 
-```
- model = TransferModel('efficientnet-b3', num_out_classes=3)
- model_path = os.path.join(thisDir, 'efn-b3_3c_60_acc0.9975.pth')  # you can replace it by your weight
- model.load_state_dict(torch.load(model_path, map_location='cpu'))
-```
+### 检测方法
+
+  * **视觉伪影检测** ：关注图像的局部纹理、结构和特征，利用传统图像分类网络，提取多尺度特征，结合注意力机制。
+  * **图像频域分析** ：真实人脸图像通常具有特定频率分布以及相干的相位结构，而伪造人脸图像可能显示出异常频率特征和不规则的相位模式。
+  * **多模态信息融合** ：提取和融合视频中的多种模态信息，如图像、音频、光流等，进行综合分析，包括相邻帧间运动的连续性、音频与视觉一致性、生理信号（眨眼、脉搏）、身份一致性、嘴唇运动等方面。
+
+### 数据集
+
+采用 Celeb-DF(v2) 数据集，包含 590 个 YouTube 真实视频和 5639 个 DeepFake 视频，覆盖多样的性别、年龄、种族、人脸朝向、光照条件、背景等。
+
+### 方法流程
+
+参考 DFGC 2021 检测赛道第一名方案，检测并裁取人脸区域，生成对抗样本、进行自监督数据增强，使用 EfficientNet-B3 作为 backbone 进行伪造检测。
+
+### 数据处理
+
+  * **MTCNN 人脸检测** ：三个卷积网络级联，P-Net 产出人脸候选窗口，R-Net 进行修正，O-Net 进一步修正并给出五个 landmark。
+  * **生成对抗样本** ：训练多个 baseline 模型，融合预测结果，使用 MI-FGSM 和 PGD 方法添加噪声，可添加到整个图像或仅人脸区域。
+  * **传统数据增强方法** ：水平翻转、高斯噪声、高斯模糊等。
+  * **自监督伪造数据合成** ：混合真实和虚假人脸，伪造图像用作前景，真实图像用作背景，构造更多数据。
+
+### 模型训练
+
+  * **基线模型** ：EfficientNet-B3。
+  * **Loss** ：三类交叉熵损失，0 表示真实人脸，1 表示虚假人脸，2 表示对抗攻击假人脸，训练时三者比例 4:1:3，预测时合并 1、2 为假。
+  * **优化技术** ：
+    * **标签平滑（Label Smoothing）** ：提高模型泛化能力，稳定训练过程，缓解对抗攻击。
+    * **平衡类别采样** ：使用 BalanceClassSampler 上采样，增加少数类样本数量，使模型更好地学习少数类特征。
+
+## 实验结果
+
+  * **训练时 loss、accuracy 变化** ：共训练 100epoch，Loss（Accuracy）在前 20epoch 快速下降（上升），之后速度减缓，略有波动。
+  * **验证时 accuracy、AUC 变化** ：Accuracy、AUC 在前 20epoch 快速上升，之后趋缓，保持在较高水平。
+
+## 项目分工
+
+陈中旻、高萱共同负责调研相关工作、代码实现、PPT 制作。
+
+## 项目资源
+
+GitHub 仓库地址：[https://github.com/gxyzl/DeepFake-Detection/tree/main](https://github.com/gxyzl/DeepFake-Detection/tree/main)
